@@ -236,6 +236,9 @@ object Ast {
       }
     }
   }
+
+  sealed trait ContractDef
+
   final case class FuncDef[Ctx <: StatelessContext](
       id: FuncId,
       isPublic: Boolean,
@@ -243,7 +246,7 @@ object Ast {
       args: Seq[Argument],
       rtypes: Seq[Type],
       body: Seq[Statement[Ctx]]
-  ) {
+  ) extends ContractDef {
     def check(state: Compiler.State[Ctx]): Unit = {
       ArrayTransformer.initArgVars(state, args)
       body.foreach(_.check(state))
@@ -265,10 +268,12 @@ object Ast {
       )
     }
   }
+
   final case class EventDef(
       ident: TypeId,
       fields: Seq[EventField]
-  )
+  ) extends ContractDef
+
   final case class EmitEvent[Ctx <: StatelessContext](id: TypeId, args: Seq[Expr[Ctx]])
       extends Statement[Ctx] {
     override def check(state: Compiler.State[Ctx]): Unit = {
