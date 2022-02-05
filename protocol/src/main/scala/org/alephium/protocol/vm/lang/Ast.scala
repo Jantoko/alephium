@@ -16,11 +16,16 @@
 
 package org.alephium.protocol.vm.lang
 
+import java.nio.charset.StandardCharsets
+
 import scala.collection.immutable
+
+import akka.util.ByteString
 
 import org.alephium.protocol.vm.{Contract => VmContract, _}
 import org.alephium.protocol.vm.lang.LogicalOperator.Not
 import org.alephium.util.AVector
+import org.alephium.util.U256
 
 // scalastyle:off number.of.methods
 object Ast {
@@ -298,7 +303,10 @@ object Ast {
     }
 
     override def genCode(state: Compiler.State[Ctx]): Seq[Instr[Ctx]] = {
-      Seq.empty
+      val eventName =
+        Const[Ctx](Val.ByteVec(ByteString(id.name.getBytes(StandardCharsets.UTF_8)))).genCode(state)
+      val argsLength = Const[Ctx](Val.U256(U256.unsafe(args.length + 1))).genCode(state)
+      eventName ++ args.flatMap(_.genCode(state)) ++ argsLength :+ Log
     }
   }
 
@@ -528,8 +536,10 @@ object Ast {
   ) extends ContractWithState {
     def genCode(state: Compiler.State[StatefulContext]): StatefulContract = {
       check(state)
-      val methods = AVector.from(funcs.view.map(func => func.toMethod(state)))
-      StatefulContract(ArrayTransformer.flattenTypeLength(fields.map(_.tpe)), methods)
+      StatefulContract(
+        ArrayTransformer.flattenTypeLength(fields.map(_.tpe)),
+        AVector.from(funcs.view.map(_.toMethod(state)))
+      )
     }
   }
 

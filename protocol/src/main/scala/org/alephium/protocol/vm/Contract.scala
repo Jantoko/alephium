@@ -234,7 +234,9 @@ object StatefulContract {
     }
 
     def toContract(): SerdeResult[StatefulContract] = {
-      AVector.tabulateE(methodsLength)(deserializeMethod).map(StatefulContract(fieldLength, _))
+      AVector
+        .tabulateE(methodsLength)(deserializeMethod)
+        .map(StatefulContract(fieldLength, _))
     }
 
     // For testing purpose
@@ -268,7 +270,11 @@ object StatefulContract {
           val methodBytes = data.take(length)
           val rest        = data.drop(length)
           Staging(
-            HalfDecoded(fieldLengthRest.value, methodIndexesRest.value, methodBytes),
+            HalfDecoded(
+              fieldLengthRest.value,
+              methodIndexesRest.value,
+              methodBytes
+            ),
             rest
           )
         }
