@@ -290,7 +290,7 @@ object Ast {
     override def name: String = id.name
   }
 
-  final case class EmitEvent[Ctx <: StatelessContext](id: TypeId, args: Seq[Expr[Ctx]])
+  final case class EmitEvent[Ctx <: StatefulContext](id: TypeId, args: Seq[Expr[Ctx]])
       extends Statement[Ctx] {
     override def check(state: Compiler.State[Ctx]): Unit = {
       val eventInfo = state.getEvent(id)
